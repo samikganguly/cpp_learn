@@ -1,9 +1,9 @@
 // print the quartiles
 #include <iostream>
-#include <ios>
-#include <iomanip>
+#include <ios>// for std::streamsize
+#include <iomanip>// for std::setprecision
 #include <string>
-#include <algorithm>
+#include <algorithm>// for std::sort
 
 using std::cin;
 using std::cout;
