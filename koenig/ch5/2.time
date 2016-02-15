@@ -1,0 +1,23 @@
+Vector : 10 records
+0 students passed, 10 student(s) failed.
+0m0.021s
+
+Vector : 1000 records 
+51 students passed, 949 student(s) failed.
+0m0.133s
+
+Vector : 10000 records
+530 students passed, 9470 student(s) failed.
+0m7.666s
+
+List : 10 records 
+0 students passed, 10 student(s) failed.
+0m0.005s
+
+List : 1000 records
+51 students passed, 949 student(s) failed.
+0m0.022s
+
+List : 10000 records 
+530 students passed, 9470 student(s) failed.
+0m0.047s
