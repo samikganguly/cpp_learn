@@ -1,0 +1,17 @@
+vector front insertion and resize benchmark
+
+10 records
+time ./6.out < 2a.sample 
+1students passed, 9 student(s) failed.
+0m0.021s
+
+1000 records
+time ./6.out < 2b.sample 
+51students passed, 949 student(s) failed.
+0m0.037s
+
+10000 records
+time ./6.out < 2c.sample 
+530students passed, 9470 student(s) failed.
+0m0.933s
+

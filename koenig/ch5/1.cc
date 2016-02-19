@@ -2,44 +2,73 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <list>
 
 using std::string;
 using std::cin;
 using std::cout;
-//using std::clog;
 using std::endl;
-using std::setw;
 using std::left;
 using std::right;
+using std::setw;
+using std::list;
 
-// returns the position of the marker
-// returns string::npos if the permutation is complete
-string::size_type permute(string& str) {
-	static string::size_type pos = string::npos;
-	if(pos == string::npos) {
-		pos = str.size() - 1;
-	} else {
-		string::size_type next_word = str.rfind(" ", pos);
-		if(next_word != string::npos)
-			pos = next_word - 1;
-		else
-			pos = string::npos;
+list<string> split(string& str) {
+	list<string> ret;
+	typedef string::const_iterator s_iter;
+	for(s_iter i = str.begin(), j = i; i != str.end();) {
+		while(isspace(*i)) ++i;
+		j = i;
+		while(!isspace(*j) && j != str.end()) ++j;
+		if(i != j) {
+			string word(i,j);
+			ret.push_back(word);
+		}
+		i = j;
 	}
-	return pos;
+	return ret;
+}
+
+// returns true if the permutation is complete
+bool permute(list<string>& words, const string& marker) {
+	static bool complete = true;
+	if(complete) {
+		words.push_back(marker);
+		complete = false;
+	}
+	string head = *(words.begin());
+	words.erase(words.begin());
+	words.push_back(head);
+	if(head == marker)
+		complete = true;
+	return complete;
 }
 
 int main(void) {
-	string line;
+	string line, marker = "\n";
+	list<string> words;
 	cout << "Enter a phrase: " << endl;
 	std::getline(cin, line);
 	string::size_type line_sz = line.size();
-	string::size_type pos = permute(line);
-	while(pos != string::npos) {
-		//clog << pos << endl;
-		cout << right << setw(line_sz) << line.substr(0, pos + 1) << "\t"
-		     << left << setw(line_sz) << line.substr(pos + 1, line_sz)
-		     << endl; 
-		pos = permute(line);
+	words = split(line);
+	line.clear();
+	bool complete = permute(words, marker);
+	while(!complete) {
+		typedef list<string>::const_iterator s_iter;
+		s_iter i;
+		cout << right << setw(line_sz);
+		for(i = words.begin(); *i != marker; ++i);
+		for(++i; i != words.end(); ++i) {
+			line += *i + " ";
+		}
+		cout << line << '\t' << left << setw(line_sz);
+		line.clear();
+		for(i = words.begin(); *i != marker; ++i) {
+			line += *i + " ";
+		}
+		cout << line << endl;
+		line.clear();
+		complete = permute(words, marker);
 	}
 	return 0;
 }

@@ -1,5 +1,5 @@
-#ifndef GUARD_6a_h
-#define GUARD_6a_h
+#ifndef GUARD_2b_h
+#define GUARD_2b_h
 
 #include <vector>
 #include <stdexcept>
