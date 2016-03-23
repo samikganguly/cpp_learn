@@ -1,0 +1,10 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<gresources>
+	<gresource prefix="/cpp_learn/gtk3/drawapp">
+		<file compressed="true">drawapp.glade</file>
+		<file compressed="true">line.png</file>
+		<file compressed="true">curve.png</file>
+		<file compressed="true">rect.png</file>
+		<file compressed="true">circle.png</file>
+	</gresource>
+</gresources>

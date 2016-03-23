@@ -68,7 +68,8 @@ public:
 	virtual DashType* get_dash_type() const noexcept;
 	virtual const Gdk::Point& get_head() const noexcept;
 	virtual const Gdk::Point& get_tail() const noexcept;
-	virtual void draw(Cairo::Context&) const noexcept = 0;
+	virtual void draw(Cairo::Context&) const = 0;
+	virtual void draw_bound(Cairo::Context&) const;
 	virtual ~DrawTool() {}
 };
 
@@ -76,19 +77,22 @@ class LineSegTool : public DrawTool {
 public:
 	LineSegTool(const Gdk::Point& head, const Gdk::Point& tail) noexcept;
 	LineSegTool(const std::array<Gdk::Point, 2>& points) noexcept;
-	virtual void draw(Cairo::Context&) const noexcept override;
+	virtual void draw(Cairo::Context&) const override;
 };
 
 class BezierCurveSegTool : public DrawTool {
 protected:
 	Gdk::Point c1, c2;
+	bool showControls;
 public:
 	BezierCurveSegTool(const Gdk::Point& head, const Gdk::Point& tail,
 		const Gdk::Point& c1, const Gdk::Point& c2) noexcept;
 	BezierCurveSegTool(const std::array<Gdk::Point, 4>& points) noexcept;
 	virtual const Gdk::Point& get_head_control() const noexcept;
 	virtual const Gdk::Point& get_tail_control() const noexcept;
-	virtual void draw(Cairo::Context&) const noexcept override;
+	virtual bool is_control_points_shown() const noexcept;
+	virtual void show_control_points(const bool show) noexcept;
+	virtual void draw(Cairo::Context&) const override;
 };
 
 class ShapeDrawTool : public DrawTool {
@@ -107,12 +111,16 @@ class CircleTool : public ShapeDrawTool {
 private:
 	static double get_radius_from_pts(const Gdk::Point& p1, 
 		const Gdk::Point& p2) noexcept;
+protected:
+	bool showCenter;
 public:
 	CircleTool(const Gdk::Point& center, 
 		const Gdk::Point& pointOnCircle) noexcept;
 	virtual const Gdk::Point& get_center() const noexcept;
 	virtual int get_radius() const noexcept;
-	virtual void draw(Cairo::Context&) const noexcept override;
+	virtual bool is_center_shown() const noexcept;
+	virtual void show_center(const bool show) noexcept;
+	virtual void draw(Cairo::Context&) const override;
 };
 
 class RectTool : public ShapeDrawTool {
@@ -124,7 +132,7 @@ public:
 		const bool isSquare) noexcept;
 	virtual void set_square(const bool isSquare) noexcept;
 	virtual bool is_square() const noexcept;
-	virtual void draw(Cairo::Context&) const noexcept override;
+	virtual void draw(Cairo::Context&) const override;
 };
 
 #endif

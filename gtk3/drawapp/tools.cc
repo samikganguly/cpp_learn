@@ -57,10 +57,6 @@ double Dash::get_start_offset() const noexcept {
 
 const RGBA DrawTool::black{"black"}, DrawTool::white{"white"};
 
-void DrawTool::set_dash_type(DashType *dt) noexcept {
-	dashType = dt;
-}
-
 void DrawTool::draw_stroke(const bool draw = true) noexcept {
 	isStroke = draw;
 }
@@ -71,6 +67,10 @@ void DrawTool::set_stroke_width(const double sw) noexcept {
 
 void DrawTool::set_stroke_color(const RGBA& color) noexcept {
 	strokeColor = color;
+}
+
+void DrawTool::set_dash_type(DashType *dt) noexcept {
+	dashType = dt;
 }
 
 const Rectangle& DrawTool::get_bound() const noexcept {
@@ -101,6 +101,23 @@ const Point& DrawTool::get_tail() const noexcept {
 	return tail;
 }
 
+void DrawTool::draw_bound(Cctx& ctx) const {
+	ctx.set_source_rgba(
+		DrawTool::black.get_red(),
+		DrawTool::black.get_green(),
+		DrawTool::black.get_blue(),
+		DrawTool::black.get_alpha());
+	ctx.set_line_width(0.5);
+	ctx.begin_new_path();
+	ctx.move_to(bound.get_x(), bound.get_y());
+	ctx.line_to(bound.get_x() + bound.get_width(), bound.get_y());
+	ctx.line_to(bound.get_x() + bound.get_width(), 
+		bound.get_y() + bound.get_height());
+	ctx.line_to(head.get_x(), tail.get_y() + bound.get_height());
+	ctx.close_path();
+	ctx.stroke();
+}
+
 LineSegTool
 ::LineSegTool(const Point& h, const Point& t) noexcept {
 	head = std::move(h);
@@ -117,9 +134,10 @@ LineSegTool
 ::LineSegTool(const array<Point, 2>& points) noexcept
 : LineSegTool{points[0], points[1]} {}
 
-void LineSegTool::draw(Cctx& ctx) const noexcept {
+void LineSegTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
+	ctx.set_line_width(strokeWidth);
 	if(dashType != nullptr)
 		ctx.set_dash(dashType->get_dashes(), 
 			dashType->get_start_offset());
@@ -158,9 +176,18 @@ const Point& BezierCurveSegTool::get_tail_control() const noexcept {
 	return c2;
 }
 
-void BezierCurveSegTool::draw(Cctx& ctx) const noexcept {
+bool BezierCurveSegTool::is_control_points_shown() const noexcept {
+	return showControls;
+}
+
+void BezierCurveSegTool::show_control_points(const bool show = true) noexcept {
+	showControls = show;
+}
+
+void BezierCurveSegTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
+	ctx.set_line_width(strokeWidth);
 	if(dashType != nullptr)
 		ctx.set_dash(dashType->get_dashes(), 
 			dashType->get_start_offset());
@@ -170,6 +197,27 @@ void BezierCurveSegTool::draw(Cctx& ctx) const noexcept {
 		c2.get_x(), c2.get_y(),
 		tail.get_x(), tail.get_y());
 	ctx.stroke();
+	if(showControls) {
+		ctx.set_source_rgba(
+			DrawTool::black.get_red(),
+			DrawTool::black.get_green(),
+			DrawTool::black.get_blue(),
+			DrawTool::black.get_alpha());
+		ctx.set_line_width(0.5);
+		DashType *dt = new FineDash(1);
+		ctx.set_dash(dt->get_dashes(), dt->get_start_offset());
+		delete dt;
+		ctx.move_to(head.get_x(), head.get_y());
+		ctx.line_to(c1.get_x(), c1.get_y());
+		ctx.move_to(tail.get_x(), tail.get_y());
+		ctx.line_to(c2.get_x(), c2.get_y());
+		ctx.stroke();
+		ctx.unset_dash();
+		ctx.arc(c1.get_x(), c1.get_y(), 1, 0, 44 / 7);
+		ctx.begin_new_sub_path();
+		ctx.arc(c2.get_x(), c2.get_y(), 1, 0, 44 / 7);
+		ctx.fill();
+	}
 }
 
 void ShapeDrawTool::draw_fill(const bool draw = true) noexcept {
@@ -215,9 +263,18 @@ int CircleTool::get_radius() const noexcept {
 	return bound.get_x() - head.get_x();
 }
 
-void CircleTool::draw(Cctx& ctx) const noexcept {
+bool CircleTool::is_center_shown() const noexcept {
+	return showCenter;
+}
+
+void CircleTool::show_center(const bool show = true) noexcept {
+	showCenter = show;
+}
+
+void CircleTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
+	ctx.set_line_width(strokeWidth);
 	if(dashType != nullptr)
 		ctx.set_dash(dashType->get_dashes(), 
 			dashType->get_start_offset());
@@ -232,6 +289,15 @@ void CircleTool::draw(Cctx& ctx) const noexcept {
 		ctx.fill();
 	} else {
 		ctx.stroke();
+	}
+	if(showCenter) {
+		ctx.set_source_rgba(DrawTool::black.get_red(),
+			            DrawTool::black.get_green(),
+			            DrawTool::black.get_blue(),
+			            DrawTool::black.get_alpha());
+		ctx.unset_dash();
+		ctx.arc(head.get_x(), head.get_y(), 1, 0, 44 / 7);
+		ctx.fill();
 	}
 }
 
@@ -265,9 +331,10 @@ bool RectTool::is_square() const noexcept {
 	return isSquare;
 }
 
-void RectTool::draw(Cctx& ctx) const noexcept {
+void RectTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
+	ctx.set_line_width(strokeWidth);
 	if(dashType != nullptr)
 		ctx.set_dash(dashType->get_dashes(), 
 			dashType->get_start_offset());
