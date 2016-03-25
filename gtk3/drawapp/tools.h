@@ -1,4 +1,8 @@
 // various tools for drawing
+
+#ifndef GUARD_TOOLS_H
+#define GUARD_TOOLS_H
+
 #include <vector>
 #include <array>
 #include <gdkmm/rectangle.h>
@@ -6,20 +10,24 @@
 #include <gdkmm/types.h>
 #include <cairomm/context.h>
 
-#ifndef GUARD_TOOLS_H
-#define GUARD_TOOLS_H
-
 class DashType {
+private:
+	static DashType emptyDash;
 protected:
+	bool empty = false;
 	double strokeWidth = 0.0;
 	std::vector<double> dashes;
+	DashType(bool empty) noexcept;
 public:
-	virtual bool operator!= (const DashType& anotherDash) noexcept;
-	inline virtual const std::vector<double>& get_dashes() const noexcept {
+	inline const std::vector<double>& get_dashes() const noexcept {
 		return dashes;
 	}
-	virtual double get_start_offset() const noexcept = 0;
+	inline bool is_empty() const noexcept {
+		return empty;
+	}
+	virtual double get_start_offset() const noexcept {}
 	virtual ~DashType() {}
+	static DashType& none() noexcept;
 };
 
 class FineDot : public DashType {
@@ -47,30 +55,32 @@ public:
 };
 
 class DrawTool {
+private:
+	static Gdk::RGBA b, w;
 protected:
 	Gdk::Point head, tail;
 	Gdk::Rectangle bound;
 	bool isStroke = true;
 	double strokeWidth = 1;
-	Gdk::RGBA strokeColor = DrawTool::black;
-	DashType *dashType;
-
-	static const Gdk::RGBA black, white;
+	Gdk::RGBA& strokeColor = DrawTool::black();
+	DashType& dashType = DashType::none();
 public:
 	virtual const Gdk::Rectangle& get_bound() const noexcept;
 	virtual void draw_stroke(const bool draw) noexcept;
 	virtual void set_stroke_width(const double strokeWidth) noexcept;
 	virtual void set_stroke_color(const Gdk::RGBA& color) noexcept;
-	virtual void set_dash_type(DashType *dashType) noexcept;
+	virtual void set_dash_type(DashType& dashType) noexcept;
 	virtual bool is_stroke() const noexcept;
 	virtual double get_stroke_width() const noexcept;
 	virtual const Gdk::RGBA& get_stroke_color() const noexcept;
-	virtual DashType* get_dash_type() const noexcept;
+	virtual const DashType& get_dash_type() const noexcept;
 	virtual const Gdk::Point& get_head() const noexcept;
 	virtual const Gdk::Point& get_tail() const noexcept;
 	virtual void draw(Cairo::Context&) const = 0;
 	virtual void draw_bound(Cairo::Context&) const;
 	virtual ~DrawTool() {}
+	static Gdk::RGBA& black() noexcept;
+	static Gdk::RGBA& white() noexcept;
 };
 
 class LineSegTool : public DrawTool {
@@ -98,7 +108,7 @@ public:
 class ShapeDrawTool : public DrawTool {
 protected:
 	bool isFill = false;
-	Gdk::RGBA fillColor = DrawTool::white;
+	Gdk::RGBA& fillColor = DrawTool::white();
 public:
 	virtual void draw_fill(const bool draw) noexcept;
 	virtual void set_fill_color(const Gdk::RGBA& color) noexcept;

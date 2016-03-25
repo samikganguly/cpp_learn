@@ -15,11 +15,19 @@ using Gdk::RGBA;
 using Gdk::Point;
 using Cctx = Cairo::Context;
 
-bool DashType::operator!= (const DashType& d1) noexcept {
-	return strokeWidth != d1.strokeWidth;
+DashType DashType::emptyDash{true};
+
+DashType& DashType::none() noexcept {
+	return DashType::emptyDash;
 }
 
-FineDot::FineDot(const double sw) noexcept {
+DashType
+::DashType(bool e) noexcept
+: empty{e} {}
+
+FineDot
+::FineDot(const double sw) noexcept
+: DashType{false} {
 	strokeWidth = sw;
 	dashes.insert(dashes.begin(), {sw, sw});
 }
@@ -28,7 +36,9 @@ double FineDot::get_start_offset() const noexcept {
 	return strokeWidth;
 }
 
-FineDash::FineDash(const double sw) noexcept {
+FineDash
+::FineDash(const double sw) noexcept
+: DashType{false} {
 	strokeWidth = sw;
 	dashes.insert(dashes.begin(), {sw * 2, sw});
 }
@@ -37,7 +47,9 @@ double FineDash::get_start_offset() const noexcept {
 	return strokeWidth;
 }
 
-Dot::Dot(const double sw) noexcept {
+Dot
+::Dot(const double sw) noexcept
+: DashType{false} {
 	strokeWidth = sw;
 	dashes.insert(dashes.begin(), {sw, sw * 2});
 }
@@ -46,7 +58,9 @@ double Dot::get_start_offset() const noexcept {
 	return strokeWidth * 2;
 }
 
-Dash::Dash(const double sw) noexcept {
+Dash
+::Dash(const double sw) noexcept
+: DashType{false} {
 	strokeWidth = sw;
 	dashes.insert(dashes.begin(), {sw * 4, sw * 2});
 }
@@ -55,7 +69,7 @@ double Dash::get_start_offset() const noexcept {
 	return strokeWidth * 2;
 }
 
-const RGBA DrawTool::black{"black"}, DrawTool::white{"white"};
+RGBA DrawTool::b{"black"}, DrawTool::w{"white"};
 
 void DrawTool::draw_stroke(const bool draw = true) noexcept {
 	isStroke = draw;
@@ -69,7 +83,7 @@ void DrawTool::set_stroke_color(const RGBA& color) noexcept {
 	strokeColor = color;
 }
 
-void DrawTool::set_dash_type(DashType *dt) noexcept {
+void DrawTool::set_dash_type(DashType& dt) noexcept {
 	dashType = dt;
 }
 
@@ -89,7 +103,7 @@ const RGBA& DrawTool::get_stroke_color() const noexcept {
 	return strokeColor;
 }
 
-DashType* DrawTool::get_dash_type() const noexcept {
+const DashType& DrawTool::get_dash_type() const noexcept {
 	return dashType;
 }
 
@@ -103,10 +117,10 @@ const Point& DrawTool::get_tail() const noexcept {
 
 void DrawTool::draw_bound(Cctx& ctx) const {
 	ctx.set_source_rgba(
-		DrawTool::black.get_red(),
-		DrawTool::black.get_green(),
-		DrawTool::black.get_blue(),
-		DrawTool::black.get_alpha());
+		DrawTool::black().get_red(),
+		DrawTool::black().get_green(),
+		DrawTool::black().get_blue(),
+		DrawTool::black().get_alpha());
 	ctx.set_line_width(0.5);
 	ctx.begin_new_path();
 	ctx.move_to(bound.get_x(), bound.get_y());
@@ -116,6 +130,14 @@ void DrawTool::draw_bound(Cctx& ctx) const {
 	ctx.line_to(head.get_x(), tail.get_y() + bound.get_height());
 	ctx.close_path();
 	ctx.stroke();
+}
+
+RGBA& DrawTool::black() noexcept {
+	return DrawTool::b;
+}
+
+RGBA& DrawTool::white() noexcept {
+	return DrawTool::w;
 }
 
 LineSegTool
@@ -138,9 +160,9 @@ void LineSegTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
 	ctx.set_line_width(strokeWidth);
-	if(dashType != nullptr)
-		ctx.set_dash(dashType->get_dashes(), 
-			dashType->get_start_offset());
+	if(!dashType.is_empty())
+		ctx.set_dash(dashType.get_dashes(), 
+			dashType.get_start_offset());
 	ctx.begin_new_path();
 	ctx.move_to(head.get_x(), head.get_y());
 	ctx.line_to(tail.get_x(), tail.get_y());
@@ -188,9 +210,9 @@ void BezierCurveSegTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
 	ctx.set_line_width(strokeWidth);
-	if(dashType != nullptr)
-		ctx.set_dash(dashType->get_dashes(), 
-			dashType->get_start_offset());
+	if(!dashType.is_empty())
+		ctx.set_dash(dashType.get_dashes(), 
+			dashType.get_start_offset());
 	ctx.begin_new_path();
 	ctx.move_to(head.get_x(), head.get_y());
 	ctx.curve_to(c1.get_x(), c1.get_y(), 
@@ -199,10 +221,10 @@ void BezierCurveSegTool::draw(Cctx& ctx) const {
 	ctx.stroke();
 	if(showControls) {
 		ctx.set_source_rgba(
-			DrawTool::black.get_red(),
-			DrawTool::black.get_green(),
-			DrawTool::black.get_blue(),
-			DrawTool::black.get_alpha());
+			DrawTool::black().get_red(),
+			DrawTool::black().get_green(),
+			DrawTool::black().get_blue(),
+			DrawTool::black().get_alpha());
 		ctx.set_line_width(0.5);
 		DashType *dt = new FineDash(1);
 		ctx.set_dash(dt->get_dashes(), dt->get_start_offset());
@@ -275,9 +297,9 @@ void CircleTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
 	ctx.set_line_width(strokeWidth);
-	if(dashType != nullptr)
-		ctx.set_dash(dashType->get_dashes(), 
-			dashType->get_start_offset());
+	if(!dashType.is_empty())
+		ctx.set_dash(dashType.get_dashes(), 
+			dashType.get_start_offset());
 	ctx.begin_new_path();
 	ctx.arc(head.get_x(), head.get_y(),
 		get_radius(), 0, 44 / 7);
@@ -291,10 +313,10 @@ void CircleTool::draw(Cctx& ctx) const {
 		ctx.stroke();
 	}
 	if(showCenter) {
-		ctx.set_source_rgba(DrawTool::black.get_red(),
-			            DrawTool::black.get_green(),
-			            DrawTool::black.get_blue(),
-			            DrawTool::black.get_alpha());
+		ctx.set_source_rgba(DrawTool::black().get_red(),
+			            DrawTool::black().get_green(),
+			            DrawTool::black().get_blue(),
+			            DrawTool::black().get_alpha());
 		ctx.unset_dash();
 		ctx.arc(head.get_x(), head.get_y(), 1, 0, 44 / 7);
 		ctx.fill();
@@ -335,9 +357,9 @@ void RectTool::draw(Cctx& ctx) const {
 	ctx.set_source_rgba(strokeColor.get_red(), strokeColor.get_green(), 
 		strokeColor.get_blue(), strokeColor.get_alpha());
 	ctx.set_line_width(strokeWidth);
-	if(dashType != nullptr)
-		ctx.set_dash(dashType->get_dashes(), 
-			dashType->get_start_offset());
+	if(!dashType.is_empty())
+		ctx.set_dash(dashType.get_dashes(), 
+			dashType.get_start_offset());
 	ctx.begin_new_path();
 	ctx.move_to(head.get_x(), head.get_y());
 	ctx.line_to(tail.get_x(), head.get_y());
