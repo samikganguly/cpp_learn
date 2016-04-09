@@ -289,7 +289,7 @@ bool CircleTool::is_center_shown() const noexcept {
 	return showCenter;
 }
 
-void CircleTool::show_center(const bool show = true) noexcept {
+void CircleTool::show_center(const bool show) noexcept {
 	showCenter = show;
 }
 
@@ -324,7 +324,7 @@ void CircleTool::draw(Cctx& ctx) const {
 }
 
 RectTool
-::RectTool(const Point& tl, const Point& br, const bool sq = false) noexcept
+::RectTool(const Point& tl, const Point& br, const bool sq) noexcept
 : isSquare(sq) {
 	auto htx = minmax(tl.get_x(), br.get_x()),
 		hty = minmax(tl.get_y(), br.get_y());

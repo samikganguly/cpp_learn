@@ -129,7 +129,7 @@ public:
 	virtual const Gdk::Point& get_center() const noexcept;
 	virtual int get_radius() const noexcept;
 	virtual bool is_center_shown() const noexcept;
-	virtual void show_center(const bool show) noexcept;
+	virtual void show_center(const bool show = true) noexcept;
 	virtual void draw(Cairo::Context&) const override;
 };
 
@@ -139,7 +139,7 @@ protected:
 public:
 	RectTool(const Gdk::Point& topLeftCorner,
 		const Gdk::Point& bottomRightCorner,
-		const bool isSquare) noexcept;
+		const bool isSquare = false) noexcept;
 	virtual void set_square(const bool isSquare) noexcept;
 	virtual bool is_square() const noexcept;
 	virtual void draw(Cairo::Context&) const override;

@@ -473,11 +473,6 @@
       </packing>
     </child>
   </object>
-  <object class="GtkImage" id="rect_tool_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">images/rect.png</property>
-  </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Draw</property>
@@ -499,7 +494,7 @@
             <property name="toolbar_style">both</property>
             <property name="icon_size">6</property>
             <child>
-              <object class="GtkToggleToolButton" id="line_seg_tool_btn">
+              <object class="GtkRadioToolButton" id="line_seg_tool_btn">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">draw a new line segment</property>
@@ -514,7 +509,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToggleToolButton" id="curve_tool_btn">
+              <object class="GtkRadioToolButton" id="curve_tool_btn">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">draw a new bezier curve</property>
@@ -522,6 +517,7 @@
                 <property name="label" translatable="yes">Curve</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">curve_tool_icon</property>
+                <property name="group">line_seg_tool_btn</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -539,7 +535,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToggleToolButton" id="rect_tool_btn">
+              <object class="GtkRadioToolButton" id="rect_tool_btn">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">draw a rectangle/square</property>
@@ -547,6 +543,7 @@
                 <property name="label" translatable="yes">Rectangle</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">rect_tool_icon</property>
+                <property name="group">line_seg_tool_btn</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -554,7 +551,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToggleToolButton" id="circle_tool_btn">
+              <object class="GtkRadioToolButton" id="circle_tool_btn">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">draw a circle</property>
@@ -562,6 +559,7 @@
                 <property name="label" translatable="yes">Circle</property>
                 <property name="use_underline">True</property>
                 <property name="icon_widget">circle_tool_icon</property>
+                <property name="group">line_seg_tool_btn</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -957,6 +955,11 @@ shape bounds</property>
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkImage" id="rect_tool_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/rect.png</property>
   </object>
   <object class="GtkBox" id="rect_tool_prop_box">
     <property name="visible">True</property>
